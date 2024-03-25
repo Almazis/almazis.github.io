@@ -1,0 +1,661 @@
+\documentclass{beamer}
+%
+% Choose how your presentation looks.
+%
+% For more themes, color themes and font themes, see:
+% http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
+%
+\mode<presentation>
+{
+  \usetheme{Madrid}      % or try Darmstadt, Madrid, Warsaw, ...
+  \usecolortheme{default} % or try albatross, beaver, crane, ...
+  \usefonttheme{default}  % or try serif, structurebold, ...
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{stmaryrd}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{color, colortbl}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{automata, arrows.meta, positioning, decorations.pathreplacing,calc,shapes,tikzmark}
+\usepackage{subcaption}
+\usepackage{caption}
+
+
+\PassOptionsToPackage{table}{xcolor}
+\definecolor{RowColorOdd}{rgb}{0.914,0.914,0.953}
+\definecolor{RowColorEven}{rgb}{1,1,1}
+
+\addtobeamertemplate{block example begin}{%
+    \setlength{\textwidth}{0.4\textwidth}
+}{}
+
+\newcommand\myeq{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny def}}}{=}}}
+\newcommand\mywedge{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny +}}}{\wedge}}}
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+\newcommand{\cvc}{\textsc{CVC4}}
+\newcommand{\eldarica}{\textsc{Eldarica}}
+\newcommand{\spacer}{\textsc{Spacer}}
+\newcommand{\zprover}{\textsc{Z3}}
+\newcommand{\vampire}{\textsc{Vampire}}
+\newcommand{\princessprover}{\textsc{Princess}}
+\newcommand{\ringen}{\textsc{RInGen}}
+\renewcommand{\phi}{\ensuremath{\varphi}}
+\renewcommand{\emptyset}{\ensuremath{\varnothing}}
+\newcommand{\tuple}[1]{\langle #1 \rangle}
+\newcommand{\aut}{\mathcal{A}}
+\newcommand{\redpause}{\addtocounter{beamerpauses}{-1}\pause\color<+>{red}}
+\input{pic}
+
+\title[]{Представление инвариантов программ с алгебраическими типами данных в виде синхронных древовидных автоматов}
+\author[Васенина А.~И.]{Васенина Анна Игоревна}
+\institute[СПбГУ]{Санкт-Петербургский государственный университет \\ Кафедра системного программирования}
+\date[16 ноября 2023 г.]{16 ноября 2023 г.}
+
+\newenvironment{comment}{}{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Uncomment these lines for an automatically generated outline.
+%\begin{frame}{Outline}
+%  \tableofcontents
+%\end{frame}
+
+\section{Introduction}
+
+\begin{frame}{Условия верификации}
+\begin{block}{Программа}
+\textcolor{blue}{int} abs (\textcolor{blue}{int} x) \{
+
+\quad \textcolor{blue}{if} x \geqslant 0
+
+\quad \quad \textcolor{blue}{return} x 
+
+\quad \textcolor{blue}{else}
+
+\quad\quad \textcolor{blue}{return} -x
+
+\}
+
+\textcolor{blue}{assert}(abs(x) \geq 0) 
+\end{block}
+\pause
+\begin{block}{Условия верификации}
+\vspace{-1em}
+\begin{align*}
+    x  \geqslant 0 \wedge y = x &\to abs(x, y)\\
+    x < 0 \wedge y = \text{-}x &\to abs(x, y)\\
+    abs(x,y) \wedge y < 0 &\to \bot
+\end{align*}
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Условия верификации}
+\begin{exampleblock}{Функция}
+$f: X \to Y$\\
+$y = f(x)$
+\end{exampleblock}
+\begin{exampleblock}{График}
+$G_f \subset X \times Y$ \\
+$(x, y) \in G_f \iff y = f(x)$
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Условия верификации}
+\begin{block}{Условия верификации}
+В общем виде
+\begin{center}
+$\phi \wedge R_1(\overline{x}_1, y_1) \wedge R_2(\overline{x}_2, y_2) \wedge \ldots \wedge R_m(\overline{x}_m, y_m) \to R_0(\overline{x}_0, y_0)$
+\end{center}
+R_i \text{ --- неинтерпретированные предикатные символы, вызовы }\\
+\quad\quad \text{ закодированных предикатными символами функций}\\
+ 
+x_i \text{ --- входные значения}\\
+y_i \text{ --- результаты}\\
+\phi \text{ --- ограничение в логике первого порядка, оставшееся тело функции}
+\end{block}
+\begin{block}{Решение}
+\begin{itemize}
+    \item Контрпример
+    \item Индуктивный инвариант
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Индуктивный инвариант}
+\begin{block}{Программа с АТД}
+\vspace{-1em}
+\begin{align*}
+    n = Z \wedge r = S(Z) &\to inc(n, r)\\
+n = S(n') \wedge r = S(r') \wedge inc(n',r') &\to inc(n, r)\\
+inc(n,r) \wedge r \neq S(n) &\to \bot
+\end{align*}
+
+\end{block}
+\begin{block}{Теоретико-множественный инвариант}
+$I = \{\langle Z, S(Z) \rangle, \langle S(Z), S(S(Z)) \rangle, \langle S(S(Z)), S(S(S(Z))) \rangle, \ldots \} $
+\end{block}
+\pause
+Конечное представление
+\pause
+\begin{itemize}
+    \item Формула логики первого порядка в теории АТД
+    \item Формула логики первого порядка с ограничением на размер
+    \item Язык автомата
+    \item Язык синхронного автомата
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Формулы логики первого порядка}
+\begin{block}{Определение}
+$\phi ::=\ (t = t')\ |\ \neg \phi\ |\ \phi \wedge \phi\ |\ \phi \vee \phi\ |\ \exists x.\phi\ |\ \forall x.\phi$
+\end{block}
+\pause
+\begin{block}{Теоретико-множественный инвариант}
+$I = \{\langle Z, S(Z) \rangle, \langle S(Z), S(S(Z)) \rangle, \langle S(S(Z)), S(S(S(Z))) \rangle, \ldots \} $
+\end{block}
+\begin{block}{Конечное представление}
+$inc(n, r) \iff r = S(n)$
+\end{block}
+\end{frame}
+
+\begin{frame}{Формулы логики первого порядка}
+\begin{alertblock}{Пример}
+\vspace{-1.7em}
+\begin{align*}
+    x = Z &\to even(x)\\
+x = S(S(y)) \wedge even(y) &\to even(x)\\
+even(x) \wedge even(y) \wedge y = S(x) &\to \bot
+\end{align*}
+
+\end{alertblock}
+
+Оценка выразительной силы
+\begin{itemize}
+    \item Процедура устранения кванторов\footnote{Oppen D. C. Reasoning about recursively defined data structures. ACM SIGACT-SIGPLAN Symposium on Principles of Programming Languages. – 1978}
+    \pause
+    \item После устранения кванторов: $x = S^n(Z),\ x = Z$
+    \item Объединение конечных и коконечных множеств $\{x\ |\ x \neq 1 \wedge x \neq 2\} \cup \{x\ |\ x = 5 \vee x = 7\}$
+    \pause
+    \item Лемма о накачке\footnote{Kostyukov Y., Mordvinov D., Fedyukovich G. Beyond the elementary representations of program invariants over algebraic data types, ACM SIGPLAN International Conference on Programming Language Design and Implementation. – 2021}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ограничения на размер}
+\begin{block}{Определение}
+\begin{itemize}
+    \item $size(t)$ --- количество конструкторов в $t$
+    \item Пресбургеровские формулы над $size$
+\end{itemize}
+\end{block}
+\pause
+\begin{block}{Пример}
+\vspace{-1em}
+\begin{align*}
+x = Z &\to even(x)\\
+x = S(S(y)) \wedge even(y) &\to even(x)\\
+even(x) \wedge even(y) \wedge y = S(x) &\to \bot
+\end{align*}
+
+\end{block}
+\begin{block}{Конечное представление}
+$even(x) \iff (size(x) + 1)\ |\ 2$
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Ограничения на размер}
+\begin{alertblock}{Пример}
+\vspace{-1em}
+\begin{align*}
+    x = Leaf &\to evenLeft(x)\\
+x = Node(Node(x',y), z) \wedge evenLeft(x')  &\to evenLeft(x)\\
+evenLeft(x) \wedge evenLeft(y) \wedge y =  Node(x, z) &\to \bot
+\end{align*}
+
+\end{alertblock}
+Оценка выразительной силы
+\begin{itemize}
+    \item Лемма о накачке\footnote{Kostyukov Y., Mordvinov D., Fedyukovich G. Beyond the elementary representations of program invariants over algebraic data types, ACM SIGPLAN International Conference on Programming Language Design and Implementation. – 2021}
+\end{itemize}
+    
+\end{frame}
+
+\begin{frame}{Регулярные инварианты}
+TODO: top-down и bottom-up автоматы + аналогия со строковыми
+\end{frame}
+
+
+\begin{frame}{Регулярные инварианты}
+\begin{block}{Пример}
+\vspace{-1em}
+\begin{align*}
+x = Z &\to even(x)\\
+x = S(S(y)) \wedge even(y) &\to even(x)\\
+even(x) \wedge even(y) \wedge y = S(x) &\to \bot    
+\end{align*}
+
+\end{block}
+\begin{block}{Теоретико-множественный инвариант}
+$I = \{Z,\ S(S(Z)),\ S(S(S(Z))),\ \ldots \} $
+\end{block}
+\begin{block}{Конечное представление}
+\begin{minipage}{0.4\linewidth}
+    $even(x) \iff x \in L$  
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\evenAutomaton
+\end{minipage}
+
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}{Регулярные инварианты}
+\begin{block}{Общий случай АТД}
+$T ::= C_0\ |\ C_1 (T)\ |\ C_2 (T, T)\ |\ \ldots\ |\ C_n(T,\ldots, T)$
+\end{block}
+\pause
+\begin{block}{Древесное представление}
+\begin{center}
+   \treeView 
+\end{center}
+
+\end{block}
+\end{frame}
+
+\begin{frame}{Регулярные инварианты}
+\begin{block}{Определение}
+Автоматом над деревьями называют кортеж $\mathcal{A} = \langle Q, Q_F, \Delta \rangle$, где $Q$ --- конечное множество состояний, $Q_F \subseteq Q^n$ --- множество финальных состояний, $\Delta$ -- отношение перехода с правилами следующего вида:
+\begin{align*}
+    F(s_1, \ldots, s_m) \rightarrow s,
+\end{align*}
+\end{block}
+\begin{block}{Определение}
+Кортеж термов $\langle t_1, \ldots, t_n \rangle$ принимается автоматом $\mathcal{A}$ тогда и только тогда, когда, $\langle \mathcal{A}[t_1], \ldots, \mathcal{A}[t_n] \rangle \in Q_F$, где
+\begin{align*}
+    \mathcal{A} \big[F(t_{1},\ldots,t_{m}) \big] = \eqdef\left\{\begin{array}{rl}
+    s, &\text{ если } \big(F (A[t_1],\ldots, A[t_m])\rightarrow s\big)\in\Delta,\\
+    \bot, &\text{ иначе}.
+    \end{array}\right.
+\end{align*}
+    
+\end{block}
+\end{frame}
+
+\begin{frame}{Регулярные инварианты}
+\begin{alertblock}{Пример}
+\vspace{-1em}
+\begin{align*}
+    x = Z \wedge y = S(y') &\to lt(x, y)\\
+    x = S(x') \wedge y = S(y') \wedge lt(x', y') &\to lt(x, y)\\
+    lt(x, y) \wedge lt(y, x) &\to \bot
+\end{align*}
+\end{alertblock}
+\begin{alertblock}{Пример}
+\vspace{-1em}
+\begin{align*}
+    x = y \to Eq(x, y)
+\end{align*}
+\end{alertblock}
+\pause
+Оценка выразительной силы
+\begin{itemize}
+    \item Представление как декартового произведения унарных языков
+    \pause
+    \item Лемма о накачке\footnote{Comon H. et al. Tree automata techniques and applications. – 2008.}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Выразительная сила представлений}
+\vspace{1em}
+\invariantReprComparison
+\end{frame}
+
+\begin{frame}{Синхронизированные древовидные автоматы}
+\begin{block}{Определение}
+    Синхронизированным древовидным автоматом называют автомат над новым алфавитом $(\Sigma_F \cup \{\bot\})^n$
+\end{block}
+\begin{block}{Стратегия синхронизации}
+Стратегия синхронизации --- это инъективная функция из множества кортежей слов в исходном алфавите $\Sigma_F$ в слова в алфавите $(\Sigma_F \cup \{\bot\})^n$
+\end{block}
+\end{frame}
+
+\begin{frame}{Синхронизированные древесные автоматы}
+\begin{block}{Стандартная стратегия}
+$f(s_1, \ldots, s_n) \oplus g(t_1, \ldots, t_m) = fg(s_1 \oplus t_1, \ldots, s_N \oplus t_N)$
+\end{block}
+\begin{block}{Пример}
+\StandartSync
+\end{block}
+\end{frame}
+
+\begin{frame}{Синхронизированные древесные автоматы}
+
+\begin{block}{Пример}
+\ListLen
+%Length for cons - good, for snoc - bad\\
+%В частности в тата доказано, что x = S(x') непредставим
+\end{block}
+
+\end{frame}
+
+
+
+\begin{frame}{Синхронизированные древесные автоматы}
+\begin{block}{Полная стратегия}
+$f(s_1, \ldots, s_n) \otimes g(t_1, \ldots, t_m) = fg(s_1 \otimes t_1, \ldots, s_1 \otimes t_m, \ldots, s_n \otimes t_m)$
+\end{block}
+\begin{block}{Пример}
+\FullSync
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Синхронизированные древесные автоматы}
+Оценка выразительной силы
+\begin{itemize}
+\item Регулярные отношения
+\pause
+\item Отношение размера
+\begin{itemize}
+    \item Длина списка
+\end{itemize}
+\pause
+\item Отношение равенства
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Синхронный автомат для равенства}
+\begin{minipage}{1\linewidth}
+$z = Node(x, y)$\\
+\\
+\PattternAutomata
+\end{minipage}
+\pause
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\begin{align*}
+    \aut'[\langle x, y, z \rangle]
+\end{align*}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\begin{align*}
+    \langle z,
+    &\qquad \aut[\langle x, g \rangle] 
+    \qquad \aut[\langle x, h \rangle] \\
+    &\qquad \aut[\langle y, g \rangle] 
+    \qquad \aut[\langle y, h \rangle] \rangle 
+\end{align*}
+\end{minipage}
+\end{frame}
+
+
+
+
+\begin{frame}{Синхронный автомат для равенства}
+\begin{minipage}{1\linewidth}
+$z = Node(x, y)$\\
+\\
+\PattternAutomata
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\onslide\begin{align*}
+    \aut'[\langle x, y, z \rangle]
+\end{align*}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\begin{align*}
+    &\langle z, \\
+    &\qquad delta_{\aut}(x, g, x_1g_1, x_1g_2, x_2g_1, x_2g_2), \\
+    &\qquad delta_{\aut}(x, h, x_1h_1, x_1h_2, x_2h_1, x_2h_2), \\
+    &\qquad delta_{\aut}(y, g, y_1g_1, y_1g_2, y_2g_1, y_2g_2), \\
+    &\qquad delta_{\aut}(y, h, y_1h_1, y_1h_2, y_2h_1, y_2h_2) \rangle.
+\end{align*}
+\end{minipage}
+\end{frame}
+
+\begin{frame}{Синхронный автомат для равенства}
+\begin{minipage}{1\linewidth}
+$z = Node(x, y)$\\
+\\
+\PattternAutomata
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\begin{align*}
+    delta_{\aut'} (x, y,& z, \\
+    & x_1y_1z_1, x_1y_1z_2, \\
+    & x_1y_2z_1, x_1y_2z_2, \\
+    & x_2y_1z_1, x_2y_1z_2, \\
+    & x_2y_2z_1, x_2y_2z_2).
+\end{align*}
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\begin{align*}
+    &\langle z, \\
+    &\qquad delta_{\aut}(x, g, x_1g_1, x_1g_2, x_2g_1, x_2g_2), \\
+    &\qquad delta_{\aut}(x, h, x_1h_1, x_1h_2, x_2h_1, x_2h_2), \\
+    &\qquad delta_{\aut}(y, g, y_1g_1, y_1g_2, y_2g_1, y_2g_2), \\
+    &\qquad delta_{\aut}(y, h, y_1h_1, y_1h_2, y_2h_1, y_2h_2) \rangle.
+\end{align*}
+\end{minipage}
+
+\pause
+\begin{minipage}{1\linewidth}
+\vspace{1em}
+$x_1y_1z_1 \to x_1y_1g \to \langle g, x_1g_1, x_1g_2, y_1g_1, y_1g_2 \rangle$
+\end{minipage}
+\end{frame}
+
+% \begin{minipage}{0.4\linewidth}
+% \vspace{1em}
+
+% \end{minipage}
+
+
+\begin{frame}{Автоматический вывод}
+\begin{block}{Условия верификации}
+В общем виде
+\begin{center}
+$\phi \wedge R_1(\overline{x}_1, y_1) \wedge R_2(\overline{x}_2, y_2) \wedge \ldots \wedge R_m(\overline{x}_m, y_m) \to R_0(\overline{x}_0, y_0)$
+\end{center}
+R_i \text{ --- неинтерпретированные предикатные символы, вызовы }\\
+\quad\quad \text{ закодированных предикатными символами функций}\\
+ 
+x_i \text{ --- входные значения}\\
+y_i \text{ --- результаты}\\
+\phi \text{ --- ограничение в логике первого порядка, оставшееся тело функции}
+\end{block}
+\begin{block}{Ограничение}
+$\phi ::=\ (t = t')\ |\ \neg \phi\ |\ \phi \wedge \phi\ |\ \phi \vee \phi\ |\ \exists x.\phi\ |\ \forall x.\phi$
+\end{block}
+\end{frame}
+
+\begin{frame}{Языковая семантика}
+\begin{block}{Определение}
+\small Языковую семантику бескванторной формулы определим индуктивно
+\begin{minipage}{0.48\linewidth}
+    \begin{itemize}
+        \item $L(p) \subseteq T(\Sigma)^k$
+        \item $L\llbracket \phi_1 \wedge \phi_2 \rrbracket = L \llbracket \phi_1 \rrbracket \cap L \llbracket \phi_2 \rrbracket$
+    \end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\linewidth}
+    \begin{itemize}
+        \item $L\llbracket \neg \phi \rrbracket = T(\Sigma)^n \setminus L \llbracket \phi \rrbracket$
+        \item $L\llbracket \phi_1 \vee \phi_2 \rrbracket = L \llbracket \phi_1 \rrbracket \cup L \llbracket \phi_2 \rrbracket$
+    \end{itemize}
+\end{minipage}
+\begin{itemize}
+    \item $L\llbracket p(\overline{t}(x_1, \ldots, x_n)) \rrbracket = \{ u \in T(\Sigma)^n \ | \ t[u] \in L\llbracket p \rrbracket \}$
+\end{itemize}
+\end{block}
+
+
+\begin{block}{Определение}
+\small $L \models \phi \iff L \llbracket \neg \phi \rrbracket = \emptyset$ 
+\end{block}
+
+\begin{block}{Теорема}
+\small Бескванторная формула $\phi$ выполнима в языковой семантике тогда и только тогда, когда она выполнима в семантике Тарского
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Синхронные древовидные автоматы}
+\begin{block}{Определение}
+\small Языковую семантику бескванторной формулы определим индуктивно
+\begin{itemize}
+        \item $L(p) \subseteq T(\Sigma)^k$
+        \item $L\llbracket \phi_1 \wedge \phi_2 \rrbracket = L \llbracket \phi_1 \rrbracket \cap L \llbracket \phi_2 \rrbracket$
+        \item $L\llbracket \neg \phi \rrbracket = T(\Sigma)^n \setminus L \llbracket \phi \rrbracket$
+        \item $L\llbracket \phi_1 \vee \phi_2 \rrbracket = L \llbracket \phi_1 \rrbracket \cup L \llbracket \phi_2 \rrbracket$ 
+        \item \textcolor<2-3>{red}{$L\llbracket p(\overline{t}(x_1, \ldots, x_n)) \rrbracket = \{ u \in T(\Sigma)^n \ | \ t[u] \in L\llbracket p \rrbracket \}$} 
+\end{itemize}
+\end{block}
+\pause
+
+\onslide<2>\begin{block}{Нижний остаток (downward quotient)}
+\vspace{-1em}
+\begin{center}
+    \begin{align*}
+    t_1(x_{11}, \ldots, x_{1N_1}), \ldots, t_K(x_{K1}, \ldots x_{KN_K}) \in L\llbracket p \rrbracket  \iff \\
+    u_{11}, \ldots, u_{1N_1}, \ldots, u_{K1}, \ldots u_{KN_K} \in L\llbracket p(\overline{t}(x_{11}, \ldots, x_{KN_K})) \rrbracket
+    \end{align*}
+\end{center}
+
+\end{block}
+
+\pause
+\vspace{-6.5em}
+\begin{block}{Теорема}
+Класс языков, представимых синхронными древовидными автоматами \textit{с полной сверткой} замкнут относительно операции взятия нижнего остатка
+\end{block}
+\end{frame}
+
+
+\begin{frame}{Синхронные древовидные автоматы}
+\begin{block}{Логическая программа}
+\vspace{-1em}
+\begin{align*}
+x = Z \wedge y = S(y') &\to lt(x, y)\\
+x = S(x') \wedge y = S(y') \wedge lt(x', y') &\to lt(x, y)\\
+lt(x, y) \wedge lt(y, x) &\to \bot
+\end{align*}
+\end{block}
+
+\begin{block}{Инвариант}
+\begin{minipage}{0.4\linewidth}
+\vspace{-1em}
+    \begin{align*}
+    \aut = \{Q&, Init, Q_F, \delta\}\\
+        Q &= \{q_0, q_1, q_2\} \\
+        Init &= q_0\\
+        Q_F &= \{q_1\}\\
+        \mathcal{L}(\aut) = \{\tuple{&Z, S(Z)}, \tuple{Z, S(S(Z))}, ...\}
+    \end{align*}
+
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+\vspace{1em}
+\ltAutomaton
+\end{minipage}
+\end{block}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Вывод инвариантов}
+\workflow
+    % \begin{figure}[htbp]
+    %     \centering
+    %         \includegraphics[width=300px]{pic/invariants.png}
+    %     \label{fig:somthing}
+    % \end{figure}
+
+\end{frame}
+
+\begin{frame}{Эксперименты}
+
+% Добавить конфигурацию сервера?
+SAT --- number of derived invariants
+
+UNSAT --- number of derived counterexamples
+
+$\exists!$ --- number of unique results
+
+\begin{table}[h]
+\resizebox{\textwidth}{!}{%
+    \centering
+    \begin{tabular}{ |c|c|r|c|c|c|c|  }
+     \hline
+     
+     Data set & \# & Result & \spacer{} & \eldarica{} & \ringen{} & \textsc{RInGen-TTA}\\
+     \hline
+     
+     \multirow{4}{*}{\emph{TIP}} & \multirow{4}{*}{454}
+                                & SAT                   & 26    & 46    & 25    & 43     \\
+                                && $\exists !$ SAT      & 7     & 14    & 0    & 4   \\
+                                && UNSAT                & 22    & 12    & 21    & 21   \\
+                                && $\exists !$ UNSAT    & 7     & 0     & 0     & 0    \\
+     \hline
+    \end{tabular}}
+\end{table}
+\centering
+Результаты экспериментов на весну 2022 г.
+
+
+\end{frame}
+
+\begin{frame}{Коллаборативные инварианты}
+
+Коллаборативным инвариантом\footnote{Kostyukov Y., Mordvinov D., Fedyukovich G. Collaborative Inference of Combined Invariants //Proceedings of 24th International Conference on Logic. – 2023. – Т. 94. – С. 288-305.} называется формула вида
+\begin{align*}
+    \phi(\overline{x}) \vee \overline{x} \in L,
+\end{align*}
+где $\phi$ --- формула первого порядка, а $L$ некоторый формальный язык
+
+\begin{table}[h]
+\resizebox{\textwidth}{!}{%
+    \centering
+    \begin{tabular}{ |c|c|r|c|c|c|  }
+     \hline
+     
+     Data set & \# & Result & \spacer{} & \ringen{} & \textsc{Collaborative}\\
+     \hline
+     
+     \multirow{2}{*}{\emph{TIP}} & \multirow{2}{*}{454}
+                                & SAT                   & 20    & 135    &   189   \\
+                                && UNSAT                & 15    & 46    &  28  \\
+     \hline
+    \end{tabular}}    
+\end{table}
+\centering
+Результаты экспериментов на лето 2023 г.
+
+\end{frame}
+
+\end{document}
