@@ -1,0 +1,461 @@
+\documentclass[aspectratio=169]{beamer}
+
+%
+% Choose how your presentation looks.
+%
+% For more themes, color themes and font themes, see:
+% http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
+%
+\mode<presentation>
+{
+  \usetheme{Madrid}      % or try Darmstadt, Madrid, Warsaw, ...
+  \usecolortheme{default} % or try albatross, beaver, crane, ...
+  \usefonttheme{default}  % or try serif, structurebold, ...
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+}
+
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{stmaryrd}
+\usepackage{color, colortbl}
+\usepackage{tikz}
+\usepackage{caption}
+
+
+\PassOptionsToPackage{table}{xcolor}
+\definecolor{RowColorOdd}{rgb}{0.914,0.914,0.953}
+\definecolor{RowColorEven}{rgb}{1,1,1}
+
+\newcommand\myeq{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny def}}}{=}}}
+\newcommand\mywedge{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny +}}}{\wedge}}}
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+\newcommand{\quot}[1]{«#1»}
+
+\AtBeginSection[]
+{
+    \begin{frame}
+        \frametitle{Содержание}
+        \tableofcontents[currentsection]
+    \end{frame}
+}
+
+\input{pic}
+
+\title[7 июля 2023~г.]{Системы хранения данных}
+\author[Васенина А.И.]{Васенина Анна Игоревна}
+% \institute[]{Санкт-Петербургский государственный университет \\ Кафедра системного программирования}
+\date[]{07 июля 2023~г.}
+
+\newenvironment{comment}{}{}
+
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Определение системы хранения данных}
+
+\begin{frame}{СХД и где они обитают}
+
+    \begin{minipage}{0.7\linewidth}
+    \includegraphics[scale=0.3]{fig/1.servers.jpg}
+    \end{minipage}
+    \begin{minipage}{0.25\linewidth}
+    \vspace{-8em}
+    \tiny{\textit{Горный Китай, монастырь Чжоан-Чжоу, год от Рождества Христова 2004-ый. Некто спросил Лин Цзы, что есть мать. И мастер ответил: «Северный и южный мосты есть мать. И шина есть мать. И ещё два десятка конденсаторов есть мать. И много чего ещё есть мать»}}
+
+    \pause
+    \vspace{4em}
+    \normalsize Так же и с СХД. Очень много чего есть СХД
+    \end{minipage}
+\end{frame}
+
+\begin{frame}{Неформальное определение СХД}
+    \begin{columns}[T] % align columns
+    \begin{column}{.48\textwidth}
+    \color{red}\rule{\linewidth}{4pt}
+    
+    Нет!
+    \begin{itemize}
+        \item Файловая система
+        \item База данных
+    \end{itemize}
+    \end{column}%
+    \hfill%
+    \begin{column}{.48\textwidth}
+    \color{blue}\rule{\linewidth}{4pt}
+    
+    Да!
+    \begin{itemize}
+        \item Сложно организованное блочное устройство
+    \end{itemize}
+    
+    \color{black}
+    \vspace{4em}
+    Блочное ???
+
+    Сложно организованное ???
+    \end{column}%
+    \end{columns}
+        
+    
+    % \begin{minipage}{0.51\linewidth}
+    %     Нет:
+    %     \begin{itemize}
+    %     \item файловая система;
+    %     \item база данных.
+    %     \end{itemize}
+    % \end{minipage}
+
+    % \begin{minipage}{0.48\linewidth}
+    %     Да:
+    %     \begin{itemize}
+    %     \item сложно организованное блочное устройство.
+    %     \end{itemize}
+
+
+    % \end{minipage}
+
+\end{frame}
+
+\begin{frame}{Блочное устройство}
+\begin{columns}
+    \begin{column}{.4\textwidth}
+        \begin{itemize}
+            \item Случайный доступ
+            \item Чтение и запись блоками
+            \item Блок фиксированного размера
+            \begin{itemize}
+                \item 512 B
+                \item 4 KiB
+            \end{itemize}
+            \item На современных устройствах большой объем данных
+            \item Работа через оперативную память (DMA --- direct memory access)
+        \end{itemize}
+    \end{column}
+    
+    \begin{column}{.3\textwidth}
+        \dma
+    \end{column}
+    
+    \begin{column}{.25\textwidth}
+            \begin{center}
+            \includegraphics[scale=0.07]{fig/6.hdd.jpg}
+            \includegraphics[scale=0.06]{fig/7.flash.jpg}
+            \end{center}
+            
+    \end{column}
+\end{columns}
+    
+    
+\end{frame}
+
+\begin{frame}{Сложная организация}
+    \organization
+\end{frame}
+
+\section{Доступность}
+
+\begin{frame}{Доступность}
+    \centering
+    \includegraphics[scale=1.3]{fig/2.tri.png}
+\end{frame}
+
+\begin{frame}{Прямое подключение (DAS)}
+\begin{columns}[T]
+    \begin{column}{.2\textwidth}
+        DAS --- directly attached storage
+        \dma
+    \end{column}
+    \begin{column}{.3\textwidth}
+    \includegraphics[scale=0.3]{fig/3.hdd.jpg}
+    \end{column}
+    \begin{column}{.4\textwidth}
+        \includegraphics[scale=0.166]{fig/4.nvme.jpg}
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Подключение по сети (NAS)}
+\begin{columns}[T]
+    \begin{column}{.4\textwidth}
+        NAS --- network attached storage
+
+        В домашнем использовании
+        \begin{itemize}
+            \item Несколько файловых систем разного типа или с полнодисковым шифрованием
+            \item Обход ограничения материнских плат по числу дисков
+        \end{itemize}
+
+        В промышленном использовании
+        \begin{itemize}
+            \item Видеонаблюдение
+            \item Сбор информации с датчиков (напр. для автопилота)
+        \end{itemize}
+    \end{column}
+    \hfill
+    \begin{column}{.55\textwidth}
+        \centering
+        \nas
+        \vspace{0.7em}
+        \includegraphics[scale = 0.15]{fig/5.nas.jpg}
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Сеть хранения данных (SAN)}
+\begin{columns}
+    \begin{column}{.3\textwidth}
+        SAN --- storage area network
+        
+        \vspace{1em}
+        Прежде всего это именно сетевое ПО
+
+        \vspace{1em}
+        Примеры функциональности
+        \begin{itemize}
+            \item Маршрутизация
+            \item Аварийное переключение (failover)
+            \item Репликация
+        \end{itemize}
+    \end{column}
+    \hfill
+    \begin{column}{.66\textwidth}
+        \san
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Аппаратное обеспечение сервера хранения данных}
+\begin{columns}
+    \begin{column}{.35\textwidth}
+        \begin{itemize}
+            \item Дополнительные возможности подключения
+            \vspace{-1em}
+            \begin{itemize}
+                \item Для сетевых карт
+                \item Для дисков
+            \end{itemize}
+            \item Быстрая замена накопителей без разбора сервера и отключения питания
+            \item Несколько сокетов для процессоров
+            \item Несколько блоков питания с возможностью быстрой замены
+        \end{itemize}
+    \end{column}
+    \begin{column}{.6\textwidth}
+        \centering
+        \includegraphics[scale=0.2]{fig/8.server.jpg}
+        \tiny Источник: Intel® Server System R1000WT Product Family. Intel® Storage System R1000WT Family. Technical Product Specification
+    \end{column}
+\end{columns}
+\end{frame}
+
+\section{Производительность}
+
+\begin{frame}{RAID для ускорения операций}
+    \raidPerf
+\end{frame}
+
+\begin{frame}{Бутылочное горлышко --- от CPU к CPU}
+    \bottleneck
+\end{frame}
+
+\begin{frame}{Software vs. Hardware}
+\begin{columns}[T] % align columns
+    \begin{column}{.48\textwidth}
+    \color{red}\rule{\linewidth}{4pt}
+    
+    Software
+    \begin{itemize}
+        \item[+] Оптимизация блочных операций (кэширование, тиринг, QoS, объединение)
+        \item[+] Удобное управление
+        \item[+] Возможность обновления и добавления функциональности
+        \item[+] Разработка ПО на С
+        \item[---] Занимает ресурсы CPU
+        \item[---] Привязан к ОС
+
+    \end{itemize}
+    \end{column}%
+    \hfill%
+    \begin{column}{.48\textwidth}
+    \color{blue}\rule{\linewidth}{4pt}
+    
+    Hardware
+    \begin{itemize}
+        \item[+] Позволяет начинать операции до загрузки ОС
+        \item[+] Встроенный UPS 
+        \item[---] Занимает PCIe слот
+        \item[---] Невозможность обновлений
+        \item[---] Для настройки требуется выключать сервер
+        \item[---] Сложно разрабатывать ПО
+    \end{itemize} 
+    \end{column}%
+
+\end{columns}
+\vspace{1em}
+    \let\thefootnote\relax\footnotetext{\fontsize{7}{8}\selectfont Важно отметить, что на вопрос о производительности “дискуссионный”. Если просто ввести запрос в гугл, то можно найти множество статей, утверждающих, что hardware быстрее, но дороже. Это устаревшая информация, не верьте ей. Hardware рейды до сих пор используются, но скорее маленькими компаниями для внутренних нужд. Например у Dell (\url{https://www.dell.com/en-us/shop/scc/sc/storage-products#portfolio}) сервера в основном с software рейдом}
+\end{frame}
+
+\begin{frame}{Об оптимизациях}
+    \centering
+    \includegraphics[scale=0.25]{fig/9.tiering.jpg}
+    
+    \tiny Источник: \url{https://www.architecting.it/blog/caching-tiering/}
+\end{frame}
+
+\section{Целостность}
+
+\begin{frame}{RAID для надежности}
+\raid
+\begin{align*}
+    RAID\ failure\ rate = f(ndrives, nparity, capacity, drive\ failure\ rate)\footnotemark
+\end{align*}
+\footnotetext[1]{\url{https://www.ibm.com/support/pages/re-evaluating-raid-5-and-raid-6-slower-larger-drives}}
+\end{frame}
+
+\begin{frame}{Математика RAID-массива}
+    \begin{itemize}
+        \item XOR
+        \begin{itemize}
+            \item RAID 5
+            \item Исправляют одну ошибку
+        \end{itemize}
+        \item Коды Хэмминга
+        \begin{itemize}
+            \item RAID 2
+            \item Из $(2^n - 1)$ дисков $n$ дисков под коды
+            \item Исправляет одну ошибку, обнаруживает двойную ошибку 
+        \end{itemize}
+        \item Коды Рида-Соломона
+        \begin{itemize}
+            \item RAID 6, исправляет 2 ошибки
+            \item RAID N+M, исправляет M ошибок
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Коды Рида-Соломона}
+\stripe
+
+    \begin{minipage}{.48\textwidth}
+        Вычисление P, Q (encode)
+    \end{minipage}
+    \begin{minipage}{.48\textwidth}
+        Восстановление данных (decode)
+    \end{minipage}
+
+\begin{columns}[T]
+    \begin{column}{.48\textwidth}
+    \begin{minipage}[t][.5\textheight][t]{\textwidth}
+        \begin{align*}
+            P &= \sum_{i=0}^{N-1} D_i \\
+            Q &= \sum_{i=0}^{N-1} q_i D_i
+        \end{align*}
+    \end{minipage}
+    \end{column}
+
+    
+    \begin{column}{.48\textwidth}
+    \begin{minipage}[t][.5\textheight][t]{\textwidth}
+        \only<1>{
+        \begin{align*}
+            D_\alpha + D_\beta &= P - \sum_{i=0}^{N-1} D_i & i \neq \alpha, \beta \\
+            q_\alpha D_\alpha + q_\beta D_\beta &= Q - \sum_{i=0}^{N-1} q_i D_i & i \neq \alpha, \beta 
+        \end{align*}
+        }
+        \only<2>{
+        \begin{align*}
+            D_\alpha + D_\beta &= \bar{P}_{\alpha, \beta} \\
+            q_\alpha D_\alpha + q_\beta D_\beta &= \bar{Q}_{\alpha, \beta}
+        \end{align*}
+        }
+
+        \only<3>{
+        \begin{align*}
+            D_\alpha &= \bar{P}_{\alpha, \beta} - D_\beta \\
+            q_\alpha D_\alpha + q_\beta D_\beta &= \bar{Q}_{\alpha, \beta}
+        \end{align*}
+        }
+        
+        \only<4>{
+        \begin{align*}
+            D_\alpha &= \bar{P}_{\alpha, \beta} - D_\beta \\
+            q_\alpha (\bar{P}_{\alpha, \beta} - D_\beta) + q_\beta D_\beta &= \bar{Q}_{\alpha, \beta}
+        \end{align*}
+        }
+
+        \onslide<5->{
+        \begin{align*}
+            D_\alpha &= \bar{P}_{\alpha, \beta} - D_\beta \\
+            (q_\beta - q_\alpha) D_\beta &= \bar{Q}_{\alpha, \beta} - \bar{P}_{\alpha, \beta} q_\alpha
+        \end{align*}
+        }
+
+        % \onslide<6->{
+        % \begin{align*}
+        %     D_\alpha &= \bar{P}_{\alpha, \beta} - D_\beta \\
+        %     (q_\beta - q_\alpha) D_\beta &= \bar{Q}_{\alpha, \beta} - \bar{P}_{\alpha, \beta} q_\alpha
+        % \end{align*}
+        % }
+
+        \vspace{-2em}
+        \begin{itemize}
+            \item<6-> $q_\beta \neq q_\alpha$ 
+            \item<7-> $q_\beta - q_\alpha$ обратим
+            \item<8-> Конечные поля!
+        \end{itemize}
+
+        \end{minipage}
+    \end{column}
+\end{columns}
+
+\let\thefootnote\relax\footnotetext{Федоров А. Р. Способы кодирования информации для построения программных отказоустойчивых дисковых массивов (\url{https://www.elibrary.ru/item.asp?id=20262093})}
+
+\end{frame}
+
+\begin{frame}{RAID 6. Запись}
+Аналогично RAID 5 при записи данных надо также вычислить и записать контрольно-восстановительные суммы (P и Q)
+\begin{enumerate}
+    \item Вычисление P и Q через Encode
+    \begin{itemize}
+        \item Требуется одинаковый кусок данных с каждого диска
+        \item Чтение с дисков, не участвующих в операции (на которых не будет записи)
+        \item Особенно неэффективно для небольших запросов (напр. 4 KiB)
+        \item Может выполнятся в несогласованном состоянии данных и синдромов
+    \end{itemize}
+    \item Вычисление P и Q через Update
+    \begin{itemize}
+        \item Для вычисления нужно прочитать только старые данные и старые синдромы (те же части, которые будут записаны)    
+        \item В некоторых случаях может быть медленнее, чем через encode
+        \item Не может быть выполнено в несогласованном состоянии данных и синдромов, для того, чтобы выполнять такие операции после создания RAID нужно посчитать и записать все контрольно-восстановительные суммы (процесс инициализации)
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{RAID 6. Запись. Write hole}
+    Записи на каждый диск выполняются независимо. Если происходит отключение питания, то могло записаться разное количество данных на каждом из дисков и может возникнуть несогласованном состоянии данных и синдромов, в таком случае нельзя делать запись через update
+    \begin{columns}
+        \begin{column}{.54\textwidth}
+            \writehole
+        \end{column}
+        \begin{column}{.42\textwidth}
+        
+        \vspace{1em}
+        Пути решения проблемы
+            \begin{itemize}
+                \item Единственный бит в метаданных на весь рейд, по которому можно определить, был ли он выгружен корректно
+                \item Битовая карта последних записей
+                \item Журнал
+            \end{itemize}
+        \end{column}
+    \end{columns}
+    
+\end{frame}
+
+\end{document}
