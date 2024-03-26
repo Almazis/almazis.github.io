@@ -46,10 +46,10 @@
 
 \input{pic}
 
-\title[7 июля 2023~г.]{Системы хранения данных}
+\title[27 марта 2024~г.]{Системы хранения данных}
 \author[Васенина А.И.]{Васенина Анна Игоревна}
 % \institute[]{Санкт-Петербургский государственный университет \\ Кафедра системного программирования}
-\date[]{07 июля 2023~г.}
+\date[]{27 марта 2024~г.}
 
 \newenvironment{comment}{}{}
 
@@ -60,10 +60,7 @@
   \titlepage
 \end{frame}
 
-\section{Определение системы хранения данных}
-
 \begin{frame}{СХД и где они обитают}
-
     \begin{minipage}{0.7\linewidth}
     \includegraphics[scale=0.3]{fig/1.servers.jpg}
     \end{minipage}
@@ -77,54 +74,7 @@
     \end{minipage}
 \end{frame}
 
-\begin{frame}{Неформальное определение СХД}
-    \begin{columns}[T] % align columns
-    \begin{column}{.48\textwidth}
-    \color{red}\rule{\linewidth}{4pt}
-    
-    Нет!
-    \begin{itemize}
-        \item Файловая система
-        \item База данных
-    \end{itemize}
-    \end{column}%
-    \hfill%
-    \begin{column}{.48\textwidth}
-    \color{blue}\rule{\linewidth}{4pt}
-    
-    Да!
-    \begin{itemize}
-        \item Сложно организованное блочное устройство
-    \end{itemize}
-    
-    \color{black}
-    \vspace{4em}
-    Блочное ???
-
-    Сложно организованное ???
-    \end{column}%
-    \end{columns}
-        
-    
-    % \begin{minipage}{0.51\linewidth}
-    %     Нет:
-    %     \begin{itemize}
-    %     \item файловая система;
-    %     \item база данных.
-    %     \end{itemize}
-    % \end{minipage}
-
-    % \begin{minipage}{0.48\linewidth}
-    %     Да:
-    %     \begin{itemize}
-    %     \item сложно организованное блочное устройство.
-    %     \end{itemize}
-
-
-    % \end{minipage}
-
-\end{frame}
-
+\section{Хранение данных}
 \begin{frame}{Блочное устройство}
 \begin{columns}
     \begin{column}{.4\textwidth}
@@ -153,17 +103,34 @@
             
     \end{column}
 \end{columns}
-    
-    
 \end{frame}
 
-\begin{frame}{Сложная организация}
+\begin{frame}{Абстракция хранения данных}
+\begin{itemize}
+    \item На уровне блочного устройства
+    \begin{itemize}
+        \item Менеджеры томов
+        \item RAID-массивы
+    \end{itemize}
+    \item Выше уровня блочного устройства
+    \begin{itemize}
+        \item Файловые системы
+        \item Базы данных
+        \item Объектные хранилища
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Задачи систем хранения данных}
     \organization
 \end{frame}
 
 \section{Доступность}
 
 \begin{frame}{Доступность}
+    \vspace{1em}
+    Система доступна тогда, когда с ней можно беспрепятственно взаимодействовать любым из заранее определенных способов (запись, чтение, др.)
+
     \centering
     \includegraphics[scale=1.3]{fig/2.tri.png}
 \end{frame}
@@ -311,7 +278,7 @@
 
 \section{Целостность}
 
-\begin{frame}{RAID для надежности}
+\begin{frame}{RAID для защиты целостности}
 \raid
 \begin{align*}
     RAID\ failure\ rate = f(ndrives, nparity, capacity, drive\ failure\ rate)\footnotemark
@@ -458,4 +425,8 @@
     
 \end{frame}
 
+\begin{frame}{RAID 6. Запись. Журнал}
+\journal
+
+\end{frame}
 \end{document}
