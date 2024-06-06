@@ -1,2 +1,11 @@
-theme: jekyll-theme-minimal
-title: Almazis homepage
+title: Almazis' Lair
+name: Anna Vasenina
+email: almazisdev@gmail.com
+description: Collection of public documents
+
+remote_theme: jekyll/minima
+minima:
+  skin: auto
+  social_links:
+    - { platform: github, user_url: "https://github.com/Almazis" }
+    - { platform: telegram, user_url: "https://t.me/Almazis" }
