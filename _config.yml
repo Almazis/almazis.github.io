@@ -1,6 +1,7 @@
 title: Almazis' Lair
-name: Anna Vasenina
-email: almazisdev@gmail.com
+author:
+  name: Anna Vasenina
+  email: almazisdev@gmail.com
 description: Collection of public documents
 
 remote_theme: jekyll/minima
