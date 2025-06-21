@@ -8,5 +8,10 @@ remote_theme: jekyll/minima
 minima:
   skin: auto
   social_links:
-    - { platform: github, user_url: "https://github.com/Almazis" }
-    - { platform: telegram, user_url: "https://t.me/Almazis" }
+    - title: GitHub
+      icon: github
+      url: "https://github.com/Almazis"
+    - title: Telegram
+      icon: telegram
+      url: "https://t.me/Almazis"
+  hide_site_feed_link: true
