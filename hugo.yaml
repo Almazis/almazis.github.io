@@ -1,5 +1,5 @@
 # Hugo configuration file
-title: My Site
+title: Almazis' Den
 
 # import hextra as module
 module:
@@ -18,31 +18,39 @@ markup:
 
 menu:
   main:
-    - name: Docs
-      pageRef: /docs
+    - name: Проекты
+      pageRef: /pages/projects
       weight: 1
-    - name: About
-      pageRef: /about
+    - name: Курсы
+      pageRef: /pages/courses
       weight: 2
-    - name: Contact ↗
-      url: "https://github.com/imfing"
+    - name: Публикации
+      pageRef: /pages/papers
       weight: 3
-    - name: Search
+    - name: Обо мне
+      pageRef: /pages/about
       weight: 4
+    - name: Search
+      weight: 5
       params:
         type: search
+    - name: Theme Toggle
+      params:
+        type: theme-toggle
+        label: true # optional, default is false
     - name: GitHub
-      weight: 5
-      url: "https://github.com/imfing/hextra-starter-template"
+      weight: 6
+      url: "https://github.com/Almazis"
       params:
         icon: github
-    - name: Twitter
-      weight: 6
-      url: "https://twitter.com/"
+    - name: Telegram
+      weight: 7
+      url: "https://t.me/Almazis"
       params:
-        icon: x-twitter
+        icon: telegram
 
 params:
+  enableInlineShortcodes: true
   navbar:
     displayTitle: true
     displayLogo: false
@@ -52,5 +60,5 @@ params:
     displayPoweredBy: true
 
   editURL:
-    enable: true
+    enable: false
     base: "https://github.com/imfing/hextra-starter-template/edit/main/content"
